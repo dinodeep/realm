@@ -176,7 +176,7 @@ namespace Realm {
 
     void start();
 
-    void end();
+    void stop();
 
   private:
     std::string_view name_;

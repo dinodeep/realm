@@ -372,7 +372,7 @@ namespace Realm {
     start_ns_ = Realm::Clock::current_time_in_nanoseconds();
   }
 
-  void Timer::end() {
+  void Timer::stop() {
     std::uint64_t end_ns = Realm::Clock::current_time_in_nanoseconds();
     total_ns_ += end_ns - start_ns_;
     total_times_++;

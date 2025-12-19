@@ -22,12 +22,17 @@
 #include "realm/logging.h"
 #include "realm/runtime_impl.h"
 #include "realm/deppart/inst_helper.h"
+#include "realm/timers.h"
 
 #include <filesystem>
 
 TYPE_IS_SERIALIZABLE(Realm::InstanceLayoutGeneric::FieldLayout);
 
 namespace Realm {
+
+namespace {
+  Timer add_measurement_timer{"ProfilingMeasurementCollection::add_measurement"};
+}
 
   Logger log_inst("inst");
 
@@ -1185,7 +1190,10 @@ namespace Realm {
 
         ProfilingMeasurements::InstanceAllocResult result;
         result.success = true;
+      
+        add_measurement_timer.start();
         measurements.add_measurement(result);
+        add_measurement_timer.stop();
       }
 
       // the InstanceMemoryUsage measurement is added at creation time for

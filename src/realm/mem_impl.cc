@@ -27,8 +27,16 @@
 #include "realm/utils.h"
 #include "realm/activemsg.h"
 #include "realm/transfer/transfer.h"
+#include "realm/timers.h"
 
 namespace Realm {
+
+namespace {
+
+  Timer deferrable_allocation_timer{"LocalManagedMemory::attempt_deferrable_allocation(...)"};
+  Timer notify_allocation_timer{"RegionInstanceImpl::notify_allocation(...)"};
+
+} // namespace
 
   Logger log_malloc("malloc");
   Logger log_copy("copy");
@@ -731,15 +739,19 @@ namespace Realm {
       // normal allocation from our managed pool
       AutoLock<> al(allocator_mutex);
 
+      deferrable_allocation_timer.start();
       result = attempt_deferrable_allocation(inst, inst->metadata.layout->bytes_used,
                                              inst->metadata.layout->alignment_reqd,
                                              inst_offset);
+      deferrable_allocation_timer.stop();
     }
 
     // if we needed an alloc result, send deferred responses too
+    notify_allocation_timer.start();
     if((result != ALLOC_DEFERRED) || need_alloc_result) {
       inst->notify_allocation(result, inst_offset, TimeLimit::responsive());
     }
+    notify_allocation_timer.stop();
 
     return result;
   }

@@ -20,6 +20,9 @@
 #include "realm/timers.h"
 #include "realm/logging.h"
 
+#include <iostream>
+#include <cassert>
+
 #if defined(REALM_ON_LINUX) || defined(REALM_ON_FREEBSD)
 #include <time.h>
 #endif
@@ -352,6 +355,29 @@ namespace Realm {
     // 'ta' and 'tb' are just our new "zeros"
     a_zero = ta;
     b_zero = tb;
+  }
+
+#define NS_PER_US 1000
+
+  Timer::Timer(std::string_view name) noexcept : name_{name} {}
+  Timer::~Timer() {
+    std::uint64_t total_us = total_ns_ / NS_PER_US;
+    std::uint64_t avg_us = (total_ns_ / total_times_) / NS_PER_US;
+    std::cout << name_ << ": " << total_us << " us (count: " << total_times_ << ", avg: " << avg_us << ")" << std::endl;
+  }
+
+  void Timer::start() {
+    assert(!started_);
+    started_ = true;
+    start_ns_ = Realm::Clock::current_time_in_nanoseconds();
+  }
+
+  void Timer::end() {
+    std::uint64_t end_ns = Realm::Clock::current_time_in_nanoseconds();
+    total_ns_ += end_ns - start_ns_;
+    total_times_++;
+    assert(started_);
+    started_ = false;
   }
 
 }; // namespace Realm

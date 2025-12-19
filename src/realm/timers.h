@@ -25,6 +25,7 @@
 #include "realm/atomics.h"
 
 #include <cstdint>
+#include <string_view>
 
 #if !defined(REALM_TIMERS_USE_RDTSC) && (defined(__i386__) || defined(__x86_64__) ||     \
                                          defined(__aarch64__) || defined(__arm__))
@@ -163,6 +164,27 @@ namespace Realm {
     bool difference;
     Logger *logger;
     uint64_t start_native;
+  };
+
+  #define NS_PER_US 1000
+
+  // Simple class for timing and aggregating times
+  class Timer {
+  public:
+    explicit Timer(std::string_view name) noexcept;
+    ~Timer();
+
+    void start();
+
+    void end();
+
+  private:
+    std::string_view name_;
+    bool started_;
+    std::uint64_t start_ns_;
+    std::uint64_t total_ns_;
+    std::uint64_t total_times_;
+
   };
 
 }; // namespace Realm
